@@ -1,10 +1,20 @@
 # ClickLight
 
-A macOS menu bar app that highlights your clicks during live demos, so viewers can see exactly when you pressed even if the UI responds slowly.
+A small macOS menu bar app that highlights your clicks, for things like live demos or when you want more visibility into what you are clicking.
+
+Screen recorders like Screen Studio and CleanShot can add click effects to recordings. ClickLight is for the moments happening live, before there is a recording to polish.
 
 ## Demo
 
 ![ClickLight showing click highlights from the macOS menu bar](docs/assets/ClickLight.gif)
+
+## Use Cases
+
+- Live product demos where viewers need to follow exactly what you clicked
+- UX reviews where the delay between click and response matters (the original motivation for ClickLight)
+- Bug reports where a recording should show both the action and the app behavior
+- Tutorials, workshops, and conference talks where pointer movement alone is easy to miss
+- Pairing with a larger macOS pointer so clicks stay visible in screen recordings
 
 ## Install
 
@@ -23,6 +33,7 @@ brew install --cask aurorascharff/clicklight/clicklight
 - Click highlights across macOS apps
 - Separate visuals for press, release, right-click, and drag
 - Menu-bar controls for size, duration, and intensity
+- Optional compact menu-bar icon
 - Test pulse for verifying overlay behavior
 - Native Swift/AppKit app
 - No Xcode project required
@@ -34,6 +45,8 @@ ClickLight requires Accessibility permission to detect clicks outside its own me
 **System Settings -> Privacy & Security -> Accessibility**
 
 After enabling permission, quit ClickLight from the menu bar and reopen it.
+
+Tip: for recorded demos or presentations, pair ClickLight with a larger macOS pointer in **System Settings -> Accessibility -> Display -> Pointer**.
 
 ## Modify It
 
@@ -48,6 +61,11 @@ Release scaffolding is included for Developer ID signing, notarization, Sparkle 
 See [Releasing](docs/RELEASING.md).
 
 ## Uninstall
+
+> **Manual uninstall**
+> If you installed ClickLight manually, see [Remove Manual Install](docs/MANUAL_INSTALL.md#remove-manual-install).
+
+If you installed ClickLight with Homebrew:
 
 ```bash
 brew uninstall --cask clicklight

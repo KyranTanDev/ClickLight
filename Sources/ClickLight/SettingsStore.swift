@@ -6,6 +6,7 @@ struct ClickSettings: Equatable {
     var showRelease: Bool
     var showRightClick: Bool
     var showDrag: Bool
+    var showMenuBarText: Bool
     var size: CGFloat
     var intensity: CGFloat
     var duration: TimeInterval
@@ -17,6 +18,7 @@ struct ClickSettings: Equatable {
         showRelease: true,
         showRightClick: true,
         showDrag: true,
+        showMenuBarText: true,
         size: 64,
         intensity: 0.9,
         duration: 0.48,
@@ -82,6 +84,7 @@ final class SettingsStore {
         static let showRelease = "showRelease"
         static let showRightClick = "showRightClick"
         static let showDrag = "showDrag"
+        static let showMenuBarText = "showMenuBarText"
         static let size = "size"
         static let intensity = "intensity"
         static let duration = "duration"
@@ -103,6 +106,7 @@ final class SettingsStore {
                 showRelease: defaults.bool(forKey: Key.showRelease),
                 showRightClick: defaults.bool(forKey: Key.showRightClick),
                 showDrag: defaults.bool(forKey: Key.showDrag),
+                showMenuBarText: defaults.bool(forKey: Key.showMenuBarText),
                 size: CGFloat(defaults.double(forKey: Key.size)),
                 intensity: CGFloat(defaults.double(forKey: Key.intensity)),
                 duration: defaults.double(forKey: Key.duration),
@@ -115,6 +119,7 @@ final class SettingsStore {
             defaults.set(newValue.showRelease, forKey: Key.showRelease)
             defaults.set(newValue.showRightClick, forKey: Key.showRightClick)
             defaults.set(newValue.showDrag, forKey: Key.showDrag)
+            defaults.set(newValue.showMenuBarText, forKey: Key.showMenuBarText)
             defaults.set(Double(newValue.size), forKey: Key.size)
             defaults.set(Double(newValue.intensity), forKey: Key.intensity)
             defaults.set(newValue.duration, forKey: Key.duration)
@@ -137,6 +142,7 @@ final class SettingsStore {
             Key.showRelease: defaults.showRelease,
             Key.showRightClick: defaults.showRightClick,
             Key.showDrag: defaults.showDrag,
+            Key.showMenuBarText: defaults.showMenuBarText,
             Key.size: Double(defaults.size),
             Key.intensity: Double(defaults.intensity),
             Key.duration: defaults.duration,
