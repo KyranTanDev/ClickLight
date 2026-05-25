@@ -1,8 +1,6 @@
 # Releasing
 
-ClickLight has release scaffolding for Developer ID signing, notarization, Sparkle updates, GitHub Releases, and a Homebrew cask.
-
-Until the first release succeeds, the Homebrew cask contains placeholder version and checksum values.
+ClickLight releases are built with Developer ID signing, notarization, Sparkle update signing, GitHub Releases, and a Homebrew cask.
 
 ## Required Apple Setup
 
@@ -57,7 +55,7 @@ Add yourself as a required reviewer. This means a pushed tag cannot publish a si
 ## Release Flow
 
 ```bash
-git tag v0.1.0
+git tag -a v0.1.0 -m "Release v0.1.0"
 git push origin v0.1.0
 ```
 
@@ -75,7 +73,7 @@ The workflow will:
 
 ## Homebrew Install
 
-After the first release updates `Casks/clicklight.rb` with a real version and SHA, users can install with:
+Users can install the latest published release with:
 
 ```bash
 brew tap aurorascharff/clicklight https://github.com/aurorascharff/ClickLight

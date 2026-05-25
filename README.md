@@ -18,20 +18,13 @@ Screen recorders like Screen Studio and CleanShot can add click effects to recor
 
 ## Install
 
-> **Homebrew is not available yet**
-> ClickLight does not have a signed release yet, so the Homebrew cask still contains placeholder release metadata and will not install successfully.
+```bash
+brew tap aurorascharff/clicklight https://github.com/aurorascharff/ClickLight
+brew install --cask aurorascharff/clicklight/clicklight
+```
 
-For now, install ClickLight manually from source:
-
-See [Manual Install](docs/MANUAL_INSTALL.md).
-
-> **Future Homebrew install**
-> Homebrew is still the intended public install path, but it will only work after the first signed release is published.
->
-> ```bash
-> brew tap aurorascharff/clicklight https://github.com/aurorascharff/ClickLight
-> brew install --cask aurorascharff/clicklight/clicklight
-> ```
+> **Manual install**
+> If you want to build ClickLight from source or iterate on it locally, use [Manual Install](docs/MANUAL_INSTALL.md).
 
 ## Features
 
@@ -63,18 +56,22 @@ Start with [Local Development](docs/LOCAL_DEVELOPMENT.md).
 
 Release scaffolding is included for Developer ID signing, notarization, Sparkle auto-updates, GitHub Releases, and a Homebrew cask.
 
-See [Releasing](docs/RELEASING.md). Until the first release is published, recent changes are tracked in the [Changelog](CHANGELOG.md).
+See [Releasing](docs/RELEASING.md). Recent changes are tracked in the [Changelog](CHANGELOG.md).
 
 ## Uninstall
 
-For now, uninstall manual builds with [Remove Manual Install](docs/MANUAL_INSTALL.md#remove-manual-install).
+```bash
+brew uninstall --cask clicklight
+```
 
-> **Future Homebrew uninstall**
-> After Homebrew installation is available, uninstall with:
->
-> ```bash
-> brew uninstall --cask clicklight
-> ```
+To remove ClickLight preferences too:
+
+```bash
+brew uninstall --cask --zap clicklight
+```
+
+> **Manual uninstall**
+> If you installed ClickLight manually from source, use [Remove Manual Install](docs/MANUAL_INSTALL.md#remove-manual-install).
 
 ## License
 
