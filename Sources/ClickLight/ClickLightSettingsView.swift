@@ -140,9 +140,9 @@ struct ClickLightSettingsView: View {
                                 viewModel.update { $0.size = CGFloat(newValue) }
                             }
                         ),
-                        range: 16...320,
+                        range: 16...240,
                         lower: "16",
-                        upper: "320",
+                        upper: "240",
                         readout: "\(Int(viewModel.settings.size.rounded())) px"
                     )
                 }
@@ -190,9 +190,9 @@ struct ClickLightSettingsView: View {
                                 viewModel.update { $0.duration = newValue }
                             }
                         ),
-                        range: 0.1...3.0,
+                        range: 0.1...2.0,
                         lower: "0.10s",
-                        upper: "3.00s",
+                        upper: "2.00s",
                         readout: String(format: "%.2f s", viewModel.settings.duration)
                     )
                 }
