@@ -9,7 +9,9 @@
     <key>CFBundleIdentifier</key>
     <string>com.aurorascharff.ClickLight</string>
     <key>CFBundleIconFile</key>
-    <string>ClickLight</string>
+    <string>AppIcon</string>
+    <key>CFBundleIconName</key>
+    <string>AppIcon</string>
     <key>CFBundleInfoDictionaryVersion</key>
     <string>6.0</string>
     <key>CFBundleName</key>

@@ -59,6 +59,8 @@ ClickLight.app
 
 and signs the app bundle. Local builds use ad-hoc signing by default. Release builds can use Developer ID signing and notarization when the required Apple credentials are configured.
 
+For app icons, `build-app.sh` now treats `AppIcon.icon` as the source of truth. On newer macOS toolchains it compiles that bundle with `actool`, which produces the modern asset output plus the fallback `.icns` file. If `actool` is unavailable, it falls back to the older manual `.icns` generation path.
+
 This works without Xcode because Xcode is not the compiler. The app uses AppKit and CoreGraphics APIs directly from Swift, and Swift Package Manager can build it from the command line.
 
 ## Useful Files
