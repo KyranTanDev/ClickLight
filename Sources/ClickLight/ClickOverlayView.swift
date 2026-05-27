@@ -230,6 +230,10 @@ final class ClickOverlayView: NSView {
     }
 
     private func color(for kind: ClickKind) -> NSColor {
+        if settings.colorPreset == .custom {
+            return settings.customColor
+        }
+
         if let color = settings.colorPreset.color {
             return color
         }

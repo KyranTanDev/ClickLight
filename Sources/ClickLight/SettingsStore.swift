@@ -11,6 +11,18 @@ struct ClickSettings: Equatable {
     var intensity: CGFloat
     var duration: TimeInterval
     var colorPreset: ClickColorPreset
+    var customColorRed: CGFloat
+    var customColorGreen: CGFloat
+    var customColorBlue: CGFloat
+
+    var customColor: NSColor {
+        NSColor(
+            calibratedRed: customColorRed,
+            green: customColorGreen,
+            blue: customColorBlue,
+            alpha: 1
+        )
+    }
 
     static let defaults = ClickSettings(
         isEnabled: true,
@@ -22,12 +34,16 @@ struct ClickSettings: Equatable {
         size: 64,
         intensity: 0.7,
         duration: 0.48,
-        colorPreset: .default
+        colorPreset: .default,
+        customColorRed: 0.0,
+        customColorGreen: 0.74,
+        customColorBlue: 1.0
     )
 }
 
 enum ClickColorPreset: String, CaseIterable, Equatable {
     case `default`
+    case custom
     case blue
     case green
     case purple
@@ -39,6 +55,8 @@ enum ClickColorPreset: String, CaseIterable, Equatable {
         switch self {
         case .default:
             return "Default"
+        case .custom:
+            return "Custom"
         case .blue:
             return "Blue"
         case .green:
@@ -57,6 +75,8 @@ enum ClickColorPreset: String, CaseIterable, Equatable {
     var color: NSColor? {
         switch self {
         case .default:
+            return nil
+        case .custom:
             return nil
         case .blue:
             return NSColor(calibratedRed: 0.0, green: 0.74, blue: 1.0, alpha: 1)
@@ -89,6 +109,9 @@ final class SettingsStore {
         static let intensity = "intensity"
         static let duration = "duration"
         static let colorPreset = "colorPreset"
+        static let customColorRed = "customColorRed"
+        static let customColorGreen = "customColorGreen"
+        static let customColorBlue = "customColorBlue"
     }
 
     private let defaults: UserDefaults
@@ -110,7 +133,10 @@ final class SettingsStore {
                 size: CGFloat(defaults.double(forKey: Key.size)),
                 intensity: CGFloat(defaults.double(forKey: Key.intensity)),
                 duration: defaults.double(forKey: Key.duration),
-                colorPreset: ClickColorPreset(rawValue: defaults.string(forKey: Key.colorPreset) ?? "") ?? .default
+                colorPreset: ClickColorPreset(rawValue: defaults.string(forKey: Key.colorPreset) ?? "") ?? .default,
+                customColorRed: CGFloat(defaults.double(forKey: Key.customColorRed)),
+                customColorGreen: CGFloat(defaults.double(forKey: Key.customColorGreen)),
+                customColorBlue: CGFloat(defaults.double(forKey: Key.customColorBlue))
             )
         }
         set {
@@ -124,6 +150,9 @@ final class SettingsStore {
             defaults.set(Double(newValue.intensity), forKey: Key.intensity)
             defaults.set(newValue.duration, forKey: Key.duration)
             defaults.set(newValue.colorPreset.rawValue, forKey: Key.colorPreset)
+            defaults.set(Double(newValue.customColorRed), forKey: Key.customColorRed)
+            defaults.set(Double(newValue.customColorGreen), forKey: Key.customColorGreen)
+            defaults.set(Double(newValue.customColorBlue), forKey: Key.customColorBlue)
             NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
         }
     }
@@ -146,7 +175,10 @@ final class SettingsStore {
             Key.size: Double(defaults.size),
             Key.intensity: Double(defaults.intensity),
             Key.duration: defaults.duration,
-            Key.colorPreset: defaults.colorPreset.rawValue
+            Key.colorPreset: defaults.colorPreset.rawValue,
+            Key.customColorRed: Double(defaults.customColorRed),
+            Key.customColorGreen: Double(defaults.customColorGreen),
+            Key.customColorBlue: Double(defaults.customColorBlue)
         ])
     }
 }

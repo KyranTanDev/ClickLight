@@ -3,6 +3,11 @@ import AppKit
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settingsStore = SettingsStore()
+    private lazy var settingsWindowController = SettingsWindowController(
+        settingsStore: settingsStore,
+        launchAtLogin: launchAtLogin,
+        permissions: permissions
+    )
     private lazy var overlayCoordinator = OverlayCoordinator(settingsStore: settingsStore)
     private lazy var captureController = ClickCaptureController(settingsStore: settingsStore, eventTap: eventTap)
     private lazy var statusController = StatusController(
@@ -12,6 +17,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         captureStatus: { [weak self] in self?.captureController.statusLabel ?? "Not Started" },
         onCheckForUpdates: { UpdateChecker.shared.checkForUpdates() },
         updatesAreConfigured: { UpdateChecker.shared.isConfigured },
+        onOpenSettings: { [weak self] in self?.openSettings() },
         onTestPulse: { [weak self] in self?.showTestPulse() },
         onQuit: { NSApplication.shared.terminate(nil) }
     )
@@ -59,5 +65,9 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
             location: NSEvent.mouseLocation,
             timestamp: CACurrentMediaTime()
         ))
+    }
+
+    private func openSettings() {
+        settingsWindowController.show()
     }
 }

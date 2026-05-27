@@ -36,7 +36,9 @@ Prefer not to use Homebrew? Download `ClickLight.zip` from [GitHub Releases](htt
 
 - Click highlights across macOS apps
 - Separate visuals for press, release, right-click, and drag
-- Menu-bar controls for size, duration, and intensity
+- Dedicated settings window with sliders + presets for size, duration, intensity, and color
+- Custom color picker in Settings
+- Menu-bar quick presets for size, duration, intensity, and color
 - Optional compact menu-bar icon
 - Test pulse for verifying overlay behavior
 - Native Swift/AppKit app
