@@ -1,7 +1,7 @@
 import AppKit
 import Carbon.HIToolbox
 
-struct HotKeyBinding: Equatable, Hashable {
+struct HotKeyBinding: Equatable, Hashable, Sendable {
     let keyCode: Int
     let carbonModifiers: Int
 
@@ -107,7 +107,7 @@ struct HotKeyBinding: Equatable, Hashable {
     }
 }
 
-enum ClickShortcutAction: String, CaseIterable, Identifiable {
+enum ClickShortcutAction: String, CaseIterable, Identifiable, Sendable {
     case toggleEnabled
     case toggleLaserPointer
     case toggleShowPress

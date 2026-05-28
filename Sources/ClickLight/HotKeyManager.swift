@@ -11,7 +11,7 @@ final class HotKeyManager {
 
     private var eventHandlerRef: EventHandlerRef?
     private var registeredHotKeys: [UInt32: RegisteredHotKey] = [:]
-    private var onTrigger: ((ClickShortcutAction) -> Void)?
+    private var onTrigger: (@MainActor @Sendable (ClickShortcutAction) -> Void)?
 
     init() {
         installEventHandlerIfNeeded()
@@ -27,7 +27,7 @@ final class HotKeyManager {
     @discardableResult
     func registerShortcuts(
         _ shortcuts: [ClickShortcutAction: HotKeyBinding],
-        onTrigger: @escaping (ClickShortcutAction) -> Void
+        onTrigger: @escaping @MainActor @Sendable (ClickShortcutAction) -> Void
     ) -> [ClickShortcutAction: String] {
         self.onTrigger = onTrigger
         unregisterAll()
@@ -108,9 +108,9 @@ final class HotKeyManager {
     }
 
     private func handleHotKey(id: UInt32) {
-        guard let action = registeredHotKeys[id]?.action else { return }
-        DispatchQueue.main.async { [weak self] in
-            self?.onTrigger?(action)
+        guard let action = registeredHotKeys[id]?.action, let onTrigger else { return }
+        Task { @MainActor in
+            onTrigger(action)
         }
     }
 
