@@ -28,7 +28,8 @@ final class OverlayCoordinator {
     }
 
     func show(_ event: ClickEvent) {
-        guard settings.isEnabled, shouldShow(event.kind) else { return }
+        guard settings.isEnabled else { return }
+        guard settings.showLaserPointer || shouldShow(event.kind) else { return }
         guard shouldAccept(event) else { return }
         guard let screen = screen(containing: event.location) else { return }
 
@@ -65,6 +66,8 @@ final class OverlayCoordinator {
             return settings.showRightClick
         case .drag:
             return settings.showDrag
+        case .move:
+            return false
         }
     }
 

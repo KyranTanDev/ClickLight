@@ -76,6 +76,13 @@ final class StatusController {
         menu.addItem(NSMenuItem.separator())
 
         menu.addItem(toggleItem(
+            title: "Laser Pointer Mode",
+            isOn: settings.showLaserPointer,
+            action: #selector(toggleLaserPointer)
+        ))
+        menu.addItem(NSMenuItem.separator())
+
+        menu.addItem(toggleItem(
             title: "Show Press",
             isOn: settings.showPress,
             action: #selector(togglePress)
@@ -90,11 +97,13 @@ final class StatusController {
             isOn: settings.showRightClick,
             action: #selector(toggleRightClick)
         ))
-        menu.addItem(toggleItem(
+        let showDragItem = toggleItem(
             title: "Show Drag",
             isOn: settings.showDrag,
             action: #selector(toggleDrag)
-        ))
+        )
+        showDragItem.isEnabled = !settings.showLaserPointer
+        menu.addItem(showDragItem)
         menu.addItem(NSMenuItem.separator())
         menu.addItem(toggleItem(
             title: "Show Menu Bar Text",
@@ -239,6 +248,10 @@ final class StatusController {
 
     @objc private func toggleDrag() {
         settingsStore.update { $0.showDrag.toggle() }
+    }
+
+    @objc private func toggleLaserPointer() {
+        settingsStore.update { $0.showLaserPointer.toggle() }
     }
 
     @objc private func toggleMenuBarText() {

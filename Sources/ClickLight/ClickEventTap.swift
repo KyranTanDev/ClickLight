@@ -6,6 +6,7 @@ final class ClickEventTap: ClickEventCapturing {
     private var eventTap: CFMachPort?
     private var runLoopSource: CFRunLoopSource?
     private var globalMonitor: Any?
+    private var laserPointerEnabled = false
 
     var statusLabel: String {
         switch (eventTap != nil, globalMonitor != nil) {
@@ -20,7 +21,11 @@ final class ClickEventTap: ClickEventCapturing {
         }
     }
 
-    func start() {
+    func start(laserPointerEnabled: Bool) {
+        if self.laserPointerEnabled != laserPointerEnabled {
+            stop()
+            self.laserPointerEnabled = laserPointerEnabled
+        }
         startEventTapIfNeeded()
         startGlobalMonitorIfNeeded()
     }
@@ -33,7 +38,7 @@ final class ClickEventTap: ClickEventCapturing {
     private func startEventTapIfNeeded() {
         guard eventTap == nil else { return }
 
-        let mask = [
+        var types = [
             CGEventType.leftMouseDown,
             CGEventType.leftMouseUp,
             CGEventType.rightMouseDown,
@@ -41,7 +46,11 @@ final class ClickEventTap: ClickEventCapturing {
             CGEventType.leftMouseDragged,
             CGEventType.rightMouseDragged,
             CGEventType.otherMouseDragged
-        ].reduce(CGEventMask(0)) { partial, eventType in
+        ]
+        if laserPointerEnabled {
+            types.append(.mouseMoved)
+        }
+        let mask = types.reduce(CGEventMask(0)) { partial, eventType in
             partial | (1 << CGEventMask(eventType.rawValue))
         }
 
@@ -82,7 +91,7 @@ final class ClickEventTap: ClickEventCapturing {
     private func startGlobalMonitorIfNeeded() {
         guard globalMonitor == nil else { return }
 
-        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: [
+        var eventTypes: NSEvent.EventTypeMask = [
             .leftMouseDown,
             .leftMouseUp,
             .rightMouseDown,
@@ -90,7 +99,12 @@ final class ClickEventTap: ClickEventCapturing {
             .leftMouseDragged,
             .rightMouseDragged,
             .otherMouseDragged
-        ]) { event in
+        ]
+        if laserPointerEnabled {
+            eventTypes.insert(.mouseMoved)
+        }
+
+        globalMonitor = NSEvent.addGlobalMonitorForEvents(matching: eventTypes) { event in
             guard let kind = ClickKind(event: event) else { return }
             Self.post(kind: kind, timestamp: event.timestamp)
         }
@@ -159,6 +173,8 @@ private extension ClickKind {
             self = .rightUp
         case .leftMouseDragged, .rightMouseDragged, .otherMouseDragged:
             self = .drag
+        case .mouseMoved:
+            self = .move
         default:
             return nil
         }
@@ -176,6 +192,8 @@ private extension ClickKind {
             self = .rightUp
         case .leftMouseDragged, .rightMouseDragged, .otherMouseDragged:
             self = .drag
+        case .mouseMoved:
+            self = .move
         default:
             return nil
         }

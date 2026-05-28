@@ -6,6 +6,7 @@ enum ClickKind: Sendable {
     case rightDown
     case rightUp
     case drag
+    case move
 
     var isRelease: Bool {
         self == .leftUp || self == .rightUp
