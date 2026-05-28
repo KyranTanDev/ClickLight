@@ -6,7 +6,7 @@ Screen recorders like Screen Studio and CleanShot can add click effects after th
 
 ## Demo
 
-![ClickLight showing click highlights from the macOS menu bar](docs/assets/ClickLight.gif)
+https://github.com/user-attachments/assets/d00d36ea-dd80-4cf4-a0f6-f3bf4b132138
 
 ## Use Cases
 
