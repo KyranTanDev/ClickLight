@@ -4,6 +4,7 @@ import AppKit
 final class AppDelegate: NSObject, NSApplicationDelegate {
     private let settingsStore = SettingsStore()
     private var settingsWindowController: SettingsWindowController?
+    private let hotKeyManager = HotKeyManager()
     private lazy var overlayCoordinator = OverlayCoordinator(settingsStore: settingsStore)
     private lazy var captureController = ClickCaptureController(settingsStore: settingsStore, eventTap: eventTap)
     private lazy var statusController = StatusController(
@@ -22,6 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
     private let launchAtLogin = LaunchAtLoginController()
     private var captureEnabledState: Bool?
     private var laserPointerEnabledState: Bool?
+    private var hotKeyBindingsState: [ClickShortcutAction: HotKeyBinding] = [:]
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         configureMainMenu()
@@ -31,6 +33,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         laserPointerEnabledState = settingsStore.settings.showLaserPointer
         captureController.startIfEnabled()
         statusController.start()
+        configureHotKeysIfNeeded(with: settingsStore.settings, force: true)
 
         NotificationCenter.default.addObserver(
             self,
@@ -48,17 +51,48 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationWillTerminate(_ notification: Notification) {
         captureController.stop()
+        hotKeyManager.unregisterAll()
     }
 
     @objc private func settingsDidChange() {
-        overlayCoordinator.refreshSettings()
         let settings = settingsStore.settings
+        overlayCoordinator.refreshSettings()
+        configureHotKeysIfNeeded(with: settings)
         let isEnabled = settings.isEnabled
         let laserPointerEnabled = settings.showLaserPointer
         guard captureEnabledState != isEnabled || laserPointerEnabledState != laserPointerEnabled else { return }
         captureEnabledState = isEnabled
         laserPointerEnabledState = laserPointerEnabled
         captureController.refreshEnabledState()
+    }
+
+    private func configureHotKeysIfNeeded(with settings: ClickSettings, force: Bool = false) {
+        let bindings = settings.shortcutBindings
+        guard force || bindings != hotKeyBindingsState else { return }
+
+        hotKeyBindingsState = bindings
+        hotKeyManager.registerShortcuts(bindings) { [weak self] action in
+            self?.handleHotKeyAction(action)
+        }
+    }
+
+    private func handleHotKeyAction(_ action: ClickShortcutAction) {
+        switch action {
+        case .toggleEnabled:
+            settingsStore.update { $0.isEnabled.toggle() }
+        case .toggleLaserPointer:
+            settingsStore.update { $0.showLaserPointer.toggle() }
+        case .toggleShowPress:
+            settingsStore.update { $0.showPress.toggle() }
+        case .toggleShowRelease:
+            settingsStore.update { $0.showRelease.toggle() }
+        case .toggleShowRightClick:
+            settingsStore.update { $0.showRightClick.toggle() }
+        case .toggleShowMiddleClick:
+            settingsStore.update { $0.showMiddleClick.toggle() }
+        case .toggleShowDrag:
+            settingsStore.update { $0.showDrag.toggle() }
+        }
     }
 
     @objc private func clickEventDidArrive(_ notification: Notification) {

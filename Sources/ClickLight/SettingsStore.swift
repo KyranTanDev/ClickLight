@@ -16,6 +16,13 @@ struct ClickSettings: Equatable {
     var customColorRed: CGFloat
     var customColorGreen: CGFloat
     var customColorBlue: CGFloat
+    var toggleEnabledHotKey: HotKeyBinding
+    var toggleLaserPointerHotKey: HotKeyBinding
+    var toggleShowPressHotKey: HotKeyBinding
+    var toggleShowReleaseHotKey: HotKeyBinding
+    var toggleShowRightClickHotKey: HotKeyBinding
+    var toggleShowMiddleClickHotKey: HotKeyBinding
+    var toggleShowDragHotKey: HotKeyBinding
 
     var customColor: NSColor {
         NSColor(
@@ -41,8 +48,79 @@ struct ClickSettings: Equatable {
         colorPreset: .default,
         customColorRed: 0.0,
         customColorGreen: 0.74,
-        customColorBlue: 1.0
+        customColorBlue: 1.0,
+        toggleEnabledHotKey: ClickShortcutAction.toggleEnabled.defaultBinding,
+        toggleLaserPointerHotKey: ClickShortcutAction.toggleLaserPointer.defaultBinding,
+        toggleShowPressHotKey: ClickShortcutAction.toggleShowPress.defaultBinding,
+        toggleShowReleaseHotKey: ClickShortcutAction.toggleShowRelease.defaultBinding,
+        toggleShowRightClickHotKey: ClickShortcutAction.toggleShowRightClick.defaultBinding,
+        toggleShowMiddleClickHotKey: ClickShortcutAction.toggleShowMiddleClick.defaultBinding,
+        toggleShowDragHotKey: ClickShortcutAction.toggleShowDrag.defaultBinding
     )
+
+    var shortcutBindings: [ClickShortcutAction: HotKeyBinding] {
+        [
+            .toggleEnabled: toggleEnabledHotKey,
+            .toggleLaserPointer: toggleLaserPointerHotKey,
+            .toggleShowPress: toggleShowPressHotKey,
+            .toggleShowRelease: toggleShowReleaseHotKey,
+            .toggleShowRightClick: toggleShowRightClickHotKey,
+            .toggleShowMiddleClick: toggleShowMiddleClickHotKey,
+            .toggleShowDrag: toggleShowDragHotKey
+        ]
+    }
+
+    func shortcutBinding(for action: ClickShortcutAction) -> HotKeyBinding {
+        switch action {
+        case .toggleEnabled:
+            return toggleEnabledHotKey
+        case .toggleLaserPointer:
+            return toggleLaserPointerHotKey
+        case .toggleShowPress:
+            return toggleShowPressHotKey
+        case .toggleShowRelease:
+            return toggleShowReleaseHotKey
+        case .toggleShowRightClick:
+            return toggleShowRightClickHotKey
+        case .toggleShowMiddleClick:
+            return toggleShowMiddleClickHotKey
+        case .toggleShowDrag:
+            return toggleShowDragHotKey
+        }
+    }
+
+    mutating func setShortcutBinding(_ binding: HotKeyBinding, for action: ClickShortcutAction) {
+        switch action {
+        case .toggleEnabled:
+            toggleEnabledHotKey = binding
+        case .toggleLaserPointer:
+            toggleLaserPointerHotKey = binding
+        case .toggleShowPress:
+            toggleShowPressHotKey = binding
+        case .toggleShowRelease:
+            toggleShowReleaseHotKey = binding
+        case .toggleShowRightClick:
+            toggleShowRightClickHotKey = binding
+        case .toggleShowMiddleClick:
+            toggleShowMiddleClickHotKey = binding
+        case .toggleShowDrag:
+            toggleShowDragHotKey = binding
+        }
+    }
+
+    mutating func resetShortcutBinding(for action: ClickShortcutAction) {
+        setShortcutBinding(action.defaultBinding, for: action)
+    }
+
+    mutating func resetAllShortcutBindings() {
+        for action in ClickShortcutAction.allCases {
+            resetShortcutBinding(for: action)
+        }
+    }
+
+    static func defaultShortcutBinding(for action: ClickShortcutAction) -> HotKeyBinding {
+        action.defaultBinding
+    }
 }
 
 enum ClickColorPreset: String, CaseIterable, Equatable {
@@ -123,6 +201,20 @@ final class SettingsStore {
         static let customColorRed = "customColorRed"
         static let customColorGreen = "customColorGreen"
         static let customColorBlue = "customColorBlue"
+        static let toggleEnabledHotKeyCode = "toggleEnabledHotKeyCode"
+        static let toggleEnabledHotKeyModifiers = "toggleEnabledHotKeyModifiers"
+        static let toggleLaserPointerHotKeyCode = "toggleLaserPointerHotKeyCode"
+        static let toggleLaserPointerHotKeyModifiers = "toggleLaserPointerHotKeyModifiers"
+        static let toggleShowPressHotKeyCode = "toggleShowPressHotKeyCode"
+        static let toggleShowPressHotKeyModifiers = "toggleShowPressHotKeyModifiers"
+        static let toggleShowReleaseHotKeyCode = "toggleShowReleaseHotKeyCode"
+        static let toggleShowReleaseHotKeyModifiers = "toggleShowReleaseHotKeyModifiers"
+        static let toggleShowRightClickHotKeyCode = "toggleShowRightClickHotKeyCode"
+        static let toggleShowRightClickHotKeyModifiers = "toggleShowRightClickHotKeyModifiers"
+        static let toggleShowMiddleClickHotKeyCode = "toggleShowMiddleClickHotKeyCode"
+        static let toggleShowMiddleClickHotKeyModifiers = "toggleShowMiddleClickHotKeyModifiers"
+        static let toggleShowDragHotKeyCode = "toggleShowDragHotKeyCode"
+        static let toggleShowDragHotKeyModifiers = "toggleShowDragHotKeyModifiers"
     }
 
     private let defaults: UserDefaults
@@ -149,7 +241,35 @@ final class SettingsStore {
                 colorPreset: ClickColorPreset(rawValue: defaults.string(forKey: Key.colorPreset) ?? "") ?? .default,
                 customColorRed: CGFloat(defaults.double(forKey: Key.customColorRed)).sanitizedColorComponent,
                 customColorGreen: CGFloat(defaults.double(forKey: Key.customColorGreen)).sanitizedColorComponent,
-                customColorBlue: CGFloat(defaults.double(forKey: Key.customColorBlue)).sanitizedColorComponent
+                customColorBlue: CGFloat(defaults.double(forKey: Key.customColorBlue)).sanitizedColorComponent,
+                toggleEnabledHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleEnabledHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleEnabledHotKeyModifiers)
+                ),
+                toggleLaserPointerHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleLaserPointerHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleLaserPointerHotKeyModifiers)
+                ),
+                toggleShowPressHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleShowPressHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleShowPressHotKeyModifiers)
+                ),
+                toggleShowReleaseHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleShowReleaseHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleShowReleaseHotKeyModifiers)
+                ),
+                toggleShowRightClickHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleShowRightClickHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleShowRightClickHotKeyModifiers)
+                ),
+                toggleShowMiddleClickHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleShowMiddleClickHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleShowMiddleClickHotKeyModifiers)
+                ),
+                toggleShowDragHotKey: HotKeyBinding(
+                    keyCode: defaults.integer(forKey: Key.toggleShowDragHotKeyCode),
+                    carbonModifiers: defaults.integer(forKey: Key.toggleShowDragHotKeyModifiers)
+                )
             )
         }
         set {
@@ -168,6 +288,20 @@ final class SettingsStore {
             defaults.set(Double(newValue.customColorRed), forKey: Key.customColorRed)
             defaults.set(Double(newValue.customColorGreen), forKey: Key.customColorGreen)
             defaults.set(Double(newValue.customColorBlue), forKey: Key.customColorBlue)
+            defaults.set(newValue.toggleEnabledHotKey.keyCode, forKey: Key.toggleEnabledHotKeyCode)
+            defaults.set(newValue.toggleEnabledHotKey.carbonModifiers, forKey: Key.toggleEnabledHotKeyModifiers)
+            defaults.set(newValue.toggleLaserPointerHotKey.keyCode, forKey: Key.toggleLaserPointerHotKeyCode)
+            defaults.set(newValue.toggleLaserPointerHotKey.carbonModifiers, forKey: Key.toggleLaserPointerHotKeyModifiers)
+            defaults.set(newValue.toggleShowPressHotKey.keyCode, forKey: Key.toggleShowPressHotKeyCode)
+            defaults.set(newValue.toggleShowPressHotKey.carbonModifiers, forKey: Key.toggleShowPressHotKeyModifiers)
+            defaults.set(newValue.toggleShowReleaseHotKey.keyCode, forKey: Key.toggleShowReleaseHotKeyCode)
+            defaults.set(newValue.toggleShowReleaseHotKey.carbonModifiers, forKey: Key.toggleShowReleaseHotKeyModifiers)
+            defaults.set(newValue.toggleShowRightClickHotKey.keyCode, forKey: Key.toggleShowRightClickHotKeyCode)
+            defaults.set(newValue.toggleShowRightClickHotKey.carbonModifiers, forKey: Key.toggleShowRightClickHotKeyModifiers)
+            defaults.set(newValue.toggleShowMiddleClickHotKey.keyCode, forKey: Key.toggleShowMiddleClickHotKeyCode)
+            defaults.set(newValue.toggleShowMiddleClickHotKey.carbonModifiers, forKey: Key.toggleShowMiddleClickHotKeyModifiers)
+            defaults.set(newValue.toggleShowDragHotKey.keyCode, forKey: Key.toggleShowDragHotKeyCode)
+            defaults.set(newValue.toggleShowDragHotKey.carbonModifiers, forKey: Key.toggleShowDragHotKeyModifiers)
             NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
         }
     }
@@ -195,7 +329,21 @@ final class SettingsStore {
             Key.colorPreset: defaults.colorPreset.rawValue,
             Key.customColorRed: Double(defaults.customColorRed),
             Key.customColorGreen: Double(defaults.customColorGreen),
-            Key.customColorBlue: Double(defaults.customColorBlue)
+            Key.customColorBlue: Double(defaults.customColorBlue),
+            Key.toggleEnabledHotKeyCode: defaults.toggleEnabledHotKey.keyCode,
+            Key.toggleEnabledHotKeyModifiers: defaults.toggleEnabledHotKey.carbonModifiers,
+            Key.toggleLaserPointerHotKeyCode: defaults.toggleLaserPointerHotKey.keyCode,
+            Key.toggleLaserPointerHotKeyModifiers: defaults.toggleLaserPointerHotKey.carbonModifiers,
+            Key.toggleShowPressHotKeyCode: defaults.toggleShowPressHotKey.keyCode,
+            Key.toggleShowPressHotKeyModifiers: defaults.toggleShowPressHotKey.carbonModifiers,
+            Key.toggleShowReleaseHotKeyCode: defaults.toggleShowReleaseHotKey.keyCode,
+            Key.toggleShowReleaseHotKeyModifiers: defaults.toggleShowReleaseHotKey.carbonModifiers,
+            Key.toggleShowRightClickHotKeyCode: defaults.toggleShowRightClickHotKey.keyCode,
+            Key.toggleShowRightClickHotKeyModifiers: defaults.toggleShowRightClickHotKey.carbonModifiers,
+            Key.toggleShowMiddleClickHotKeyCode: defaults.toggleShowMiddleClickHotKey.keyCode,
+            Key.toggleShowMiddleClickHotKeyModifiers: defaults.toggleShowMiddleClickHotKey.carbonModifiers,
+            Key.toggleShowDragHotKeyCode: defaults.toggleShowDragHotKey.keyCode,
+            Key.toggleShowDragHotKeyModifiers: defaults.toggleShowDragHotKey.carbonModifiers
         ])
     }
 }

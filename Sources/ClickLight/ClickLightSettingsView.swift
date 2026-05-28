@@ -5,6 +5,7 @@ struct ClickLightSettingsView: View {
     @ObservedObject var viewModel: ClickLightSettingsViewModel
     @State private var selectedPane: SettingsPane = .general
     @State private var showResetConfirmation = false
+    @State private var showShortcutResetConfirmation = false
 
     var body: some View {
         NavigationSplitView {
@@ -33,6 +34,8 @@ struct ClickLightSettingsView: View {
                             generalPane
                         case .style:
                             stylePane
+                        case .shortcuts:
+                            shortcutsPane
                         case .events:
                             eventsPane
                         case .menuBar:
@@ -309,6 +312,67 @@ struct ClickLightSettingsView: View {
         }
     }
 
+    private var shortcutsPane: some View {
+        VStack(spacing: 16) {
+            SettingsCard(title: "Global Shortcuts", subtitle: "These shortcuts work system-wide. At least one modifier key is required.") {
+                VStack(spacing: 0) {
+                    ForEach(Array(ClickShortcutAction.allCases.enumerated()), id: \.element) { index, action in
+                        ShortcutRecorderField(
+                            label: action.title,
+                            subtitle: action.subtitle,
+                            currentBinding: viewModel.shortcutBinding(for: action),
+                            defaultBinding: action.defaultBinding,
+                            errorMessage: viewModel.shortcutError(for: action),
+                            onRecord: { binding in
+                                viewModel.updateShortcutBinding(binding, for: action)
+                            },
+                            onReset: {
+                                viewModel.resetShortcutBinding(for: action)
+                            }
+                        )
+                        .padding(.vertical, 4)
+
+                        if index < ClickShortcutAction.allCases.count - 1 {
+                            Divider().padding(.vertical, 4)
+                        }
+                    }
+                }
+            }
+
+            SettingsCard {
+                ModernRow(title: "Reset All Shortcuts",
+                          subtitle: "Restore default keybindings for every shortcut action.") {
+                    Button(role: .destructive) {
+                        showShortcutResetConfirmation = true
+                    } label: {
+                        Label("Reset", systemImage: "arrow.counterclockwise")
+                    }
+                    .controlSize(.regular)
+                }
+            }
+
+            SettingsCard(title: "Fixed Shortcuts", subtitle: "These shortcuts are built-in and cannot be changed.") {
+                VStack(spacing: 0) {
+                    fixedShortcutRow(label: "Open Settings", keys: "⌘,")
+                    Divider().padding(.vertical, 6)
+                    fixedShortcutRow(label: "Quit ClickLight", keys: "⌘Q")
+                }
+            }
+        }
+        .confirmationDialog(
+            "Reset all keyboard shortcuts?",
+            isPresented: $showShortcutResetConfirmation,
+            titleVisibility: .visible
+        ) {
+            Button("Reset", role: .destructive) {
+                viewModel.resetAllShortcutBindings()
+            }
+            Button("Cancel", role: .cancel) {}
+        } message: {
+            Text("This restores all shortcut bindings in this pane to their default values.")
+        }
+    }
+
     private var menuBarPane: some View {
         SettingsCard {
             ModernRow(title: "Show Menu Bar Text",
@@ -451,6 +515,22 @@ struct ClickLightSettingsView: View {
             }
         }
     }
+
+    @ViewBuilder
+    private func fixedShortcutRow(label: String, keys: String) -> some View {
+        HStack {
+            Text(label)
+                .font(.callout.weight(.medium))
+            Spacer()
+            Text(keys)
+                .font(.system(.body, design: .monospaced))
+                .padding(.horizontal, 8)
+                .padding(.vertical, 4)
+                .background(.quaternary, in: RoundedRectangle(cornerRadius: 6, style: .continuous))
+                .foregroundStyle(.secondary)
+        }
+        .padding(.vertical, 6)
+    }
 }
 
 // MARK: - Reusable Components
@@ -540,6 +620,7 @@ private struct ColorSwatch: View {
 private enum SettingsPane: String, CaseIterable, Hashable {
     case general
     case style
+    case shortcuts
     case events
     case menuBar
     case system
@@ -550,6 +631,8 @@ private enum SettingsPane: String, CaseIterable, Hashable {
             return "General"
         case .style:
             return "Visual Style"
+        case .shortcuts:
+            return "Keyboard Shortcuts"
         case .events:
             return "Event Visibility"
         case .menuBar:
@@ -565,6 +648,8 @@ private enum SettingsPane: String, CaseIterable, Hashable {
             return "Toggle ClickLight and learn how settings work."
         case .style:
             return "Size, intensity, duration, and color of click pulses."
+        case .shortcuts:
+            return "Record custom global shortcuts for toggling ClickLight modes."
         case .events:
             return "Choose which mouse interactions trigger a pulse."
         case .menuBar:
@@ -580,6 +665,8 @@ private enum SettingsPane: String, CaseIterable, Hashable {
             return "gearshape"
         case .style:
             return "paintpalette"
+        case .shortcuts:
+            return "keyboard"
         case .events:
             return "cursorarrow.click.2"
         case .menuBar:

@@ -61,6 +61,7 @@ final class ClickLightSettingsViewModel: NSObject, ObservableObject {
     @Published private(set) var launchAtLoginEnabled: Bool = false
     @Published private(set) var accessibilityTrusted: Bool = false
     @Published var launchAtLoginErrorMessage: String?
+    @Published private(set) var shortcutErrors: [ClickShortcutAction: String] = [:]
 
     init(
         settingsStore: SettingsStore,
@@ -76,6 +77,7 @@ final class ClickLightSettingsViewModel: NSObject, ObservableObject {
         super.init()
         self.launchAtLoginEnabled = launchAtLogin.isEnabled
         self.accessibilityTrusted = permissions.isAccessibilityTrusted
+        self.shortcutErrors = Self.findShortcutConflicts(in: settings)
         NotificationCenter.default.addObserver(
             self,
             selector: #selector(settingsDidChange),
@@ -99,6 +101,7 @@ final class ClickLightSettingsViewModel: NSObject, ObservableObject {
         if settings != latestSettings {
             settings = latestSettings
         }
+        shortcutErrors = Self.findShortcutConflicts(in: latestSettings)
     }
 
     @objc private func appBecameActive() {
@@ -185,13 +188,73 @@ final class ClickLightSettingsViewModel: NSObject, ObservableObject {
         apply(.defaults)
     }
 
+    func shortcutBinding(for action: ClickShortcutAction) -> HotKeyBinding {
+        settings.shortcutBinding(for: action)
+    }
+
+    func shortcutError(for action: ClickShortcutAction) -> String? {
+        shortcutErrors[action]
+    }
+
+    @discardableResult
+    func updateShortcutBinding(_ binding: HotKeyBinding, for action: ClickShortcutAction) -> Bool {
+        if let conflictingAction = conflictAction(for: binding, excluding: action) {
+            let message = "Matches \(conflictingAction.title). Choose a unique shortcut."
+            shortcutErrors[action] = message
+            return false
+        }
+
+        shortcutErrors[action] = nil
+        update { settings in
+            settings.setShortcutBinding(binding, for: action)
+        }
+        return true
+    }
+
+    func resetShortcutBinding(for action: ClickShortcutAction) {
+        update { settings in
+            settings.resetShortcutBinding(for: action)
+        }
+    }
+
+    func resetAllShortcutBindings() {
+        update { settings in
+            settings.resetAllShortcutBindings()
+        }
+    }
+
     private func apply(_ updatedSettings: ClickSettings) {
         guard settings != updatedSettings else { return }
         settings = updatedSettings
+        shortcutErrors = Self.findShortcutConflicts(in: updatedSettings)
 
         DispatchQueue.main.async { [weak self] in
             guard let self, self.settings == updatedSettings else { return }
             self.settingsStore.settings = updatedSettings
         }
+    }
+
+    private func conflictAction(for binding: HotKeyBinding, excluding action: ClickShortcutAction) -> ClickShortcutAction? {
+        ClickShortcutAction.allCases.first { candidate in
+            guard candidate != action else { return false }
+            return settings.shortcutBinding(for: candidate) == binding
+        }
+    }
+
+    private static func findShortcutConflicts(in settings: ClickSettings) -> [ClickShortcutAction: String] {
+        var errors: [ClickShortcutAction: String] = [:]
+
+        for action in ClickShortcutAction.allCases {
+            let binding = settings.shortcutBinding(for: action)
+            guard let other = ClickShortcutAction.allCases.first(where: {
+                $0 != action && settings.shortcutBinding(for: $0) == binding
+            }) else {
+                continue
+            }
+
+            errors[action] = "Matches \(other.title). Choose a unique shortcut."
+        }
+
+        return errors
     }
 }
