@@ -11,6 +11,10 @@ struct ClickSettings: Equatable {
     var showLiveKeyboardShortcuts: Bool
     var liveShortcutPosition: LiveShortcutPosition
     var liveShortcutSize: LiveShortcutSize
+    var showEventControlsInMenu: Bool
+    var showStyleControlsInMenu: Bool
+    var showMenuBarControlsInMenu: Bool
+    var showLaunchAtLoginInMenu: Bool
     var showMenuBarText: Bool
     var showMenuBarClickCount: Bool
     var size: CGFloat
@@ -41,7 +45,6 @@ struct ClickSettings: Equatable {
     var toggleShowMiddleClickHotKey: HotKeyBinding?
     var toggleShowDragHotKey: HotKeyBinding?
     var toggleLiveKeyboardShortcutsHotKey: HotKeyBinding?
-    var menuGroups: [MenuGroupConfig]
 
     var customColor: NSColor {
         NSColor(
@@ -99,6 +102,10 @@ struct ClickSettings: Equatable {
         showLiveKeyboardShortcuts: false,
         liveShortcutPosition: .bottomCenter,
         liveShortcutSize: .medium,
+        showEventControlsInMenu: true,
+        showStyleControlsInMenu: true,
+        showMenuBarControlsInMenu: true,
+        showLaunchAtLoginInMenu: true,
         showMenuBarText: false,
         showMenuBarClickCount: false,
         size: 64,
@@ -128,8 +135,7 @@ struct ClickSettings: Equatable {
         toggleShowRightClickHotKey: ClickShortcutAction.toggleShowRightClick.defaultBinding,
         toggleShowMiddleClickHotKey: ClickShortcutAction.toggleShowMiddleClick.defaultBinding,
         toggleShowDragHotKey: ClickShortcutAction.toggleShowDrag.defaultBinding,
-        toggleLiveKeyboardShortcutsHotKey: ClickShortcutAction.toggleLiveKeyboardShortcuts.defaultBinding,
-        menuGroups: MenuGroupConfig.defaults
+        toggleLiveKeyboardShortcutsHotKey: ClickShortcutAction.toggleLiveKeyboardShortcuts.defaultBinding
     )
 
     var shortcutBindings: [ClickShortcutAction: HotKeyBinding] {
@@ -388,6 +394,10 @@ final class SettingsStore {
         static let customDragColorRed = "customDragColorRed"
         static let customDragColorGreen = "customDragColorGreen"
         static let customDragColorBlue = "customDragColorBlue"
+        static let showEventControlsInMenu = "showEventControlsInMenu"
+        static let showStyleControlsInMenu = "showStyleControlsInMenu"
+        static let showMenuBarControlsInMenu = "showMenuBarControlsInMenu"
+        static let showLaunchAtLoginInMenu = "showLaunchAtLoginInMenu"
         static let toggleEnabledHotKeyCode = "toggleEnabledHotKeyCode"
         static let toggleEnabledHotKeyModifiers = "toggleEnabledHotKeyModifiers"
         static let toggleEnabledHotKeyIsEnabled = "toggleEnabledHotKeyIsEnabled"
@@ -412,7 +422,6 @@ final class SettingsStore {
         static let toggleLiveKeyboardShortcutsHotKeyCode = "toggleLiveKeyboardShortcutsHotKeyCode"
         static let toggleLiveKeyboardShortcutsHotKeyModifiers = "toggleLiveKeyboardShortcutsHotKeyModifiers"
         static let toggleLiveKeyboardShortcutsHotKeyIsEnabled = "toggleLiveKeyboardShortcutsHotKeyIsEnabled"
-        static let menuGroups = "menuGroups"
     }
 
     private let defaults: UserDefaults
@@ -435,6 +444,10 @@ final class SettingsStore {
                 showLiveKeyboardShortcuts: defaults.bool(forKey: Key.showLiveKeyboardShortcuts),
                 liveShortcutPosition: LiveShortcutPosition(rawValue: defaults.string(forKey: Key.liveShortcutPosition) ?? "") ?? .bottomCenter,
                 liveShortcutSize: LiveShortcutSize(rawValue: defaults.string(forKey: Key.liveShortcutSize) ?? "") ?? .medium,
+                showEventControlsInMenu: defaults.bool(forKey: Key.showEventControlsInMenu),
+                showStyleControlsInMenu: defaults.bool(forKey: Key.showStyleControlsInMenu),
+                showMenuBarControlsInMenu: defaults.bool(forKey: Key.showMenuBarControlsInMenu),
+                showLaunchAtLoginInMenu: defaults.bool(forKey: Key.showLaunchAtLoginInMenu),
                 showMenuBarText: defaults.bool(forKey: Key.showMenuBarText),
                 showMenuBarClickCount: defaults.bool(forKey: Key.showMenuBarClickCount),
                 size: CGFloat(defaults.double(forKey: Key.size)),
@@ -496,16 +509,7 @@ final class SettingsStore {
                     keyCode: Key.toggleLiveKeyboardShortcutsHotKeyCode,
                     modifiers: Key.toggleLiveKeyboardShortcutsHotKeyModifiers,
                     isEnabled: Key.toggleLiveKeyboardShortcutsHotKeyIsEnabled
-                ),
-                menuGroups: {
-                    guard
-                        let data = defaults.data(forKey: Key.menuGroups),
-                        let saved = try? JSONDecoder().decode([MenuGroupConfig].self, from: data)
-                    else {
-                        return MenuGroupConfig.defaults
-                    }
-                    return MenuGroupConfig.merged(saved: saved, defaults: MenuGroupConfig.defaults)
-                }()
+                )
             )
         }
         set {
@@ -519,6 +523,10 @@ final class SettingsStore {
             defaults.set(newValue.showLiveKeyboardShortcuts, forKey: Key.showLiveKeyboardShortcuts)
             defaults.set(newValue.liveShortcutPosition.rawValue, forKey: Key.liveShortcutPosition)
             defaults.set(newValue.liveShortcutSize.rawValue, forKey: Key.liveShortcutSize)
+            defaults.set(newValue.showEventControlsInMenu, forKey: Key.showEventControlsInMenu)
+            defaults.set(newValue.showStyleControlsInMenu, forKey: Key.showStyleControlsInMenu)
+            defaults.set(newValue.showMenuBarControlsInMenu, forKey: Key.showMenuBarControlsInMenu)
+            defaults.set(newValue.showLaunchAtLoginInMenu, forKey: Key.showLaunchAtLoginInMenu)
             defaults.set(newValue.showMenuBarText, forKey: Key.showMenuBarText)
             defaults.set(newValue.showMenuBarClickCount, forKey: Key.showMenuBarClickCount)
             defaults.set(Double(newValue.size), forKey: Key.size)
@@ -549,9 +557,6 @@ final class SettingsStore {
             saveShortcutBinding(newValue.toggleShowMiddleClickHotKey, keyCode: Key.toggleShowMiddleClickHotKeyCode, modifiers: Key.toggleShowMiddleClickHotKeyModifiers, isEnabled: Key.toggleShowMiddleClickHotKeyIsEnabled)
             saveShortcutBinding(newValue.toggleShowDragHotKey, keyCode: Key.toggleShowDragHotKeyCode, modifiers: Key.toggleShowDragHotKeyModifiers, isEnabled: Key.toggleShowDragHotKeyIsEnabled)
             saveShortcutBinding(newValue.toggleLiveKeyboardShortcutsHotKey, keyCode: Key.toggleLiveKeyboardShortcutsHotKeyCode, modifiers: Key.toggleLiveKeyboardShortcutsHotKeyModifiers, isEnabled: Key.toggleLiveKeyboardShortcutsHotKeyIsEnabled)
-            if let data = try? JSONEncoder().encode(newValue.menuGroups) {
-                defaults.set(data, forKey: Key.menuGroups)
-            }
             NotificationCenter.default.post(name: Self.didChangeNotification, object: self)
         }
     }
@@ -590,6 +595,10 @@ final class SettingsStore {
             Key.showLiveKeyboardShortcuts: defaults.showLiveKeyboardShortcuts,
             Key.liveShortcutPosition: defaults.liveShortcutPosition.rawValue,
             Key.liveShortcutSize: defaults.liveShortcutSize.rawValue,
+            Key.showEventControlsInMenu: defaults.showEventControlsInMenu,
+            Key.showStyleControlsInMenu: defaults.showStyleControlsInMenu,
+            Key.showMenuBarControlsInMenu: defaults.showMenuBarControlsInMenu,
+            Key.showLaunchAtLoginInMenu: defaults.showLaunchAtLoginInMenu,
             Key.showMenuBarText: defaults.showMenuBarText,
             Key.showMenuBarClickCount: defaults.showMenuBarClickCount,
             Key.size: Double(defaults.size),
@@ -637,9 +646,6 @@ final class SettingsStore {
             Key.toggleLiveKeyboardShortcutsHotKeyModifiers: 0,
             Key.toggleLiveKeyboardShortcutsHotKeyIsEnabled: false
         ])
-        if let defaultData = try? JSONEncoder().encode(MenuGroupConfig.defaults) {
-            self.defaults.register(defaults: [Key.menuGroups: defaultData])
-        }
     }
 }
 

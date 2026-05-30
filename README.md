@@ -40,10 +40,10 @@ Prefer not to use Homebrew? Download `ClickLight.zip` from [GitHub Releases](htt
 - Optional live keyboard shortcut display pinned to the bottom of the screen by default, with pointer-following placement and sizes through XL available
 - Local daily click activity chart with a resettable seven-day history
 - Optional daily click count in the menu bar
-- Dedicated settings window with presets, sliders, a Menu Layout editor, and a sidebar preview pad with Randomize
+- Dedicated settings window with presets, sliders, optional menu sections, and a sidebar preview pad with Randomize
 - Custom color picker in Settings
 - Menu-bar quick presets for size, duration, intensity, and color
-- Customizable status-bar menu layout: reorder groups and items and hide what you don't use
+- Customizable status-bar menu sections for hiding optional controls you do not use
 - One default ClickLight toggle shortcut, with optional shortcuts for other actions
 - Optional compact menu-bar icon
 - Test pulse for verifying overlay behavior

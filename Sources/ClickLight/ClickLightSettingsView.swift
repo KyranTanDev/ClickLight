@@ -757,117 +757,64 @@ struct ClickLightSettingsView: View {
 
 private struct MenuLayoutPane: View {
     @ObservedObject var viewModel: ClickLightSettingsViewModel
-    @State private var groups: [MenuGroupConfig]
-    @State private var expandedGroups: Set<String>
-    @State private var showResetConfirmation = false
-    @State private var listReady = false
 
     init(viewModel: ClickLightSettingsViewModel) {
         self.viewModel = viewModel
-        let initialGroups = viewModel.settings.menuGroups
-        self._groups = State(initialValue: initialGroups)
-        self._expandedGroups = State(initialValue: Set(initialGroups.map(\.id)))
     }
 
     var body: some View {
-        VStack(spacing: 16) {
-            SettingsCard(title: "Menu Groups", subtitle: "Drag to reorder groups and items. Toggle checkmarks to show or hide.") {
-                List {
-                    ForEach($groups) { $group in
-                        DisclosureGroup(
-                            isExpanded: Binding(
-                                get: { expandedGroups.contains(group.id) },
-                                set: { expanded in
-                                    if expanded { expandedGroups.insert(group.id) } else { expandedGroups.remove(group.id) }
-                                }
-                            )
-                        ) {
-                            ForEach($group.items) { $item in
-                                HStack(spacing: 8) {
-                                    Toggle("", isOn: $item.isVisible)
-                                        .labelsHidden()
-                                        .onChange(of: item.isVisible) { _, newValue in
-                                            if newValue, let gIdx = groups.firstIndex(where: { $0.id == group.id }) {
-                                                groups[gIdx].isVisible = true
-                                            }
-                                            save()
-                                        }
-                                    Text(item.title)
-                                        .font(.callout)
-                                }
-                                .padding(.vertical, 1)
-                            }
-                            .onMove { from, to in
-                                group.items.move(fromOffsets: from, toOffset: to)
-                                save()
-                            }
-                        } label: {
-                            HStack(spacing: 8) {
-                                Toggle("", isOn: $group.isVisible)
-                                    .labelsHidden()
-                                    .onChange(of: group.isVisible) { _, _ in
-                                        save()
-                                    }
-                                Text(group.title)
-                                    .font(.callout.weight(.semibold))
-                            }
-                        }
-                    }
-                    .onMove { from, to in
-                        groups.move(fromOffsets: from, toOffset: to)
-                        save()
-                    }
-                }
-                .listStyle(.inset)
-                .scrollContentBackground(.hidden)
-                .animation(nil, value: expandedGroups)
-                .frame(height: 300)
-                .opacity(listReady ? 1 : 0)
-                .onAppear {
-                    DispatchQueue.main.async { listReady = true }
-                }
-                .clipShape(RoundedRectangle(cornerRadius: 8, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: 8, style: .continuous)
-                        .strokeBorder(Color.primary.opacity(0.08), lineWidth: 1)
-                )
-            }
-
-            SettingsCard {
+        SettingsCard(title: "Menu Sections", subtitle: "Keep essential controls visible and hide optional menu sections you do not use.") {
+            VStack(spacing: 0) {
                 ModernRow(
-                    title: "Reset Menu Layout",
-                    subtitle: "Restore the default menu group order and show all items."
+                    title: "Show Event Controls",
+                    subtitle: "Show Press, Release, Right Click, Middle Click, and Drag in the menu."
                 ) {
-                    Button(role: .destructive) {
-                        showResetConfirmation = true
-                    } label: {
-                        Label("Reset", systemImage: "arrow.counterclockwise")
-                    }
-                    .controlSize(.regular)
+                    Toggle("", isOn: binding(\.showEventControlsInMenu))
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .accessibilityLabel("Show Event Controls")
+                }
+                Divider().padding(.vertical, 6)
+                ModernRow(
+                    title: "Show Style Presets",
+                    subtitle: "Show Size, Intensity, Duration, and Colors in the menu."
+                ) {
+                    Toggle("", isOn: binding(\.showStyleControlsInMenu))
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .accessibilityLabel("Show Style Presets")
+                }
+                Divider().padding(.vertical, 6)
+                ModernRow(
+                    title: "Show Menu Bar Controls",
+                    subtitle: "Show menu bar text and click count controls in the menu."
+                ) {
+                    Toggle("", isOn: binding(\.showMenuBarControlsInMenu))
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .accessibilityLabel("Show Menu Bar Controls")
+                }
+                Divider().padding(.vertical, 6)
+                ModernRow(
+                    title: "Show Launch at Login",
+                    subtitle: "Show Launch at Login in the menu."
+                ) {
+                    Toggle("", isOn: binding(\.showLaunchAtLoginInMenu))
+                        .toggleStyle(.switch)
+                        .labelsHidden()
+                        .accessibilityLabel("Show Launch at Login")
                 }
             }
-        }
-        .onChange(of: viewModel.settings.menuGroups) { _, newGroups in
-            if newGroups != groups {
-                groups = newGroups
-            }
-        }
-        .confirmationDialog(
-            "Reset menu layout?",
-            isPresented: $showResetConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Reset", role: .destructive) {
-                viewModel.update { $0.menuGroups = MenuGroupConfig.defaults }
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This restores the default group order and makes all menu items visible.")
         }
     }
 
-    private func save() {
-        viewModel.update { $0.menuGroups = groups }
+    private func binding<Value>(_ keyPath: WritableKeyPath<ClickSettings, Value>) -> Binding<Value> {
+        Binding(
+            get: { viewModel.settings[keyPath: keyPath] },
+            set: { newValue in
+                viewModel.update { $0[keyPath: keyPath] = newValue }
+            }
+        )
     }
 }
 
